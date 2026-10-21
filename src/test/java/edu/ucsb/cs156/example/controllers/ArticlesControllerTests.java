@@ -17,6 +17,8 @@ import edu.ucsb.cs156.example.testconfig.TestConfig;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -60,8 +62,8 @@ public class ArticlesControllerTests extends ControllerTestCase {
                     "url", "https://news.ucsb.edu/2026/022878/new-tool-makes-mapping-ocean-easier")
                 .param(
                     "explanation",
-                    "A new open-source software package developed by UCSB marine scientists makes it"
-                        + " faster and simpler to find, organize and map data")
+                    "A new open-source software package developed by UCSB marine scientists makes"
+                        + " it faster and simpler to find, organize and map data")
                 .param("email", "harrisontasoff@ucsb.edu")
                 .param("dateAdded", "2022-01-03T00:00:00")
                 .with(csrf()))
@@ -79,8 +81,8 @@ public class ArticlesControllerTests extends ControllerTestCase {
                     "url", "https://news.ucsb.edu/2026/022878/new-tool-makes-mapping-ocean-easier")
                 .param(
                     "explanation",
-                    "A new open-source software package developed by UCSB marine scientists makes it"
-                        + " faster and simpler to find, organize and map data")
+                    "A new open-source software package developed by UCSB marine scientists makes"
+                        + " it faster and simpler to find, organize and map data")
                 .param("email", "harrisontasoff@ucsb.edu")
                 .param("dateAdded", "2022-01-03T00:00:00")
                 .with(csrf()))
@@ -166,8 +168,8 @@ public class ArticlesControllerTests extends ControllerTestCase {
                         "https://news.ucsb.edu/2026/022878/new-tool-makes-mapping-ocean-easier")
                     .param(
                         "explanation",
-                        "A new open-source software package developed by UCSB marine scientists makes it"
-                            + " faster and simpler to find, organize and map data")
+                        "A new open-source software package developed by UCSB marine scientists"
+                            + " makes it faster and simpler to find, organize and map data")
                     .param("email", "harrisontasoff@ucsb.edu")
                     .param("dateAdded", "2022-01-03T00:00:00")
                     .with(csrf()))
@@ -179,5 +181,70 @@ public class ArticlesControllerTests extends ControllerTestCase {
     String expectedJson = mapper.writeValueAsString(article1);
     String responseString = response.getResponse().getContentAsString();
     assertEquals(expectedJson, responseString);
+  }
+
+  @Test
+  public void logged_out_users_cannot_get_by_id() throws Exception {
+    mockMvc
+        .perform(get("/api/articles").param("id", "7"))
+        .andExpect(status().is(403)); // logged out users can't get by id
+  }
+
+  @WithMockUser(roles = {"USER"})
+  @Test
+  public void test_that_logged_in_user_can_get_by_id_when_the_id_exists() throws Exception {
+
+    // arrange
+    LocalDateTime ldt1 = LocalDateTime.parse("2022-01-03T00:00:00");
+
+    Article article1 =
+        Article.builder()
+            .title("A new tool makes mapping the ocean easier")
+            .url("https://news.ucsb.edu/2026/022878/new-tool-makes-mapping-ocean-easier")
+            .explanation(
+                "A new open-source software package developed by UCSB marine scientists makes it"
+                    + " faster and simpler to find, organize and map data")
+            .email("harrisontasoff@ucsb.edu")
+            .dateAdded(ldt1)
+            .build();
+
+    when(articleRepository.findById(eq(7L))).thenReturn(Optional.of(article1));
+
+    // act
+    MvcResult response =
+        mockMvc
+            .perform(get("/api/articles").param("id", "7"))
+            .andExpect(status().isOk())
+            .andReturn();
+
+    // assert
+
+    verify(articleRepository, times(1)).findById(eq(7L));
+    String expectedJson = mapper.writeValueAsString(article1);
+    String responseString = response.getResponse().getContentAsString();
+    assertEquals(expectedJson, responseString);
+  }
+
+  @WithMockUser(roles = {"USER"})
+  @Test
+  public void test_that_logged_in_user_can_get_by_id_when_the_id_does_not_exist() throws Exception {
+
+    // arrange
+
+    when(articleRepository.findById(eq(7L))).thenReturn(Optional.empty());
+
+    // act
+    MvcResult response =
+        mockMvc
+            .perform(get("/api/articles").param("id", "7"))
+            .andExpect(status().isNotFound())
+            .andReturn();
+
+    // assert
+
+    verify(articleRepository, times(1)).findById(eq(7L));
+    Map<String, Object> json = responseToJson(response);
+    assertEquals("EntityNotFoundException", json.get("type"));
+    assertEquals("Article with id 7 not found", json.get("message"));
   }
 }

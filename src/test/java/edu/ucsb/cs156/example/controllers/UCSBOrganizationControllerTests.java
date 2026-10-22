@@ -182,7 +182,7 @@ public class UCSBOrganizationControllerTests extends ControllerTestCase {
   public void admin_can_delete_organization() throws Exception {
     UCSBOrganization org = sampleOrganization();
 
-    when(ucsbOrganizationRepository.findById("TEST")).thenReturn(Optional.of(org));
+    when(ucsbOrganizationRepository.findById(eq("TEST"))).thenReturn(Optional.of(org));
 
     MvcResult response =
         mockMvc
@@ -192,7 +192,8 @@ public class UCSBOrganizationControllerTests extends ControllerTestCase {
 
     verify(ucsbOrganizationRepository).findById("TEST");
     verify(ucsbOrganizationRepository).delete(org);
-    assertEquals(mapper.writeValueAsString(org), response.getResponse().getContentAsString());
+
+    assertEquals("record TEST deleted", response.getResponse().getContentAsString());
   }
 
   @WithMockUser(roles = {"ADMIN", "USER"})

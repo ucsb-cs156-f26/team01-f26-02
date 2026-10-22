@@ -16,6 +16,8 @@ import edu.ucsb.cs156.example.repositories.UserRepository;
 import edu.ucsb.cs156.example.testconfig.TestConfig;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -31,12 +33,12 @@ public class UCSBDiningCommonsMenuItemControllerTests extends ControllerTestCase
 
   @MockitoBean UserRepository userRepository;
 
-  // Tests for GET /api/ucsb-dining-commons-menu-items/all
+  // Tests for GET /api/UCSBDiningCommonsMenuItem/all
 
   @Test
   public void logged_out_users_cannot_get_all() throws Exception {
     mockMvc
-        .perform(get("/api/ucsb-dining-commons-menu-items/all"))
+        .perform(get("/api/UCSBDiningCommonsMenuItem/all"))
         .andExpect(status().is(403)); // logged out users can't get all
   }
 
@@ -44,7 +46,7 @@ public class UCSBDiningCommonsMenuItemControllerTests extends ControllerTestCase
   @Test
   public void logged_in_users_can_get_all() throws Exception {
     mockMvc
-        .perform(get("/api/ucsb-dining-commons-menu-items/all"))
+        .perform(get("/api/UCSBDiningCommonsMenuItem/all"))
         .andExpect(status().is(200)); // logged
   }
 
@@ -75,7 +77,7 @@ public class UCSBDiningCommonsMenuItemControllerTests extends ControllerTestCase
     // act
     MvcResult response =
         mockMvc
-            .perform(get("/api/ucsb-dining-commons-menu-items/all"))
+            .perform(get("/api/UCSBDiningCommonsMenuItem/all"))
             .andExpect(status().isOk())
             .andReturn();
 
@@ -87,13 +89,74 @@ public class UCSBDiningCommonsMenuItemControllerTests extends ControllerTestCase
     assertEquals(expectedJson, responseString);
   }
 
-  // Tests for POST /api/ucsb-dining-commons-menu-items/post
+  // Tests for GET /api/UCSBDiningCommonsMenuItem?id={id}
+
+  @Test
+  public void logged_out_users_cannot_get_by_id() throws Exception {
+    mockMvc
+        .perform(get("/api/UCSBDiningCommonsMenuItem").param("id", "7"))
+        .andExpect(status().is(403)); // logged out users can't get by id
+  }
+
+  @WithMockUser(roles = {"USER"})
+  @Test
+  public void test_that_logged_in_user_can_get_by_id_when_the_id_exists() throws Exception {
+
+    // arrange
+    UCSBDiningCommonsMenuItem ucsbDiningCommonsMenuItem =
+        UCSBDiningCommonsMenuItem.builder()
+            .name("Baked Pesto Pasta with Chicken")
+            .diningCommonsCode("ortega")
+            .station("Entree Specials")
+            .build();
+
+    when(ucsbDiningCommonsMenuItemRepository.findById(eq(7L)))
+        .thenReturn(Optional.of(ucsbDiningCommonsMenuItem));
+
+    // act
+    MvcResult response =
+        mockMvc
+            .perform(get("/api/UCSBDiningCommonsMenuItem").param("id", "7"))
+            .andExpect(status().isOk())
+            .andReturn();
+
+    // assert
+
+    verify(ucsbDiningCommonsMenuItemRepository, times(1)).findById(eq(7L));
+    String expectedJson = mapper.writeValueAsString(ucsbDiningCommonsMenuItem);
+    String responseString = response.getResponse().getContentAsString();
+    assertEquals(expectedJson, responseString);
+  }
+
+  @WithMockUser(roles = {"USER"})
+  @Test
+  public void test_that_logged_in_user_can_get_by_id_when_the_id_does_not_exist() throws Exception {
+
+    // arrange
+
+    when(ucsbDiningCommonsMenuItemRepository.findById(eq(7L))).thenReturn(Optional.empty());
+
+    // act
+    MvcResult response =
+        mockMvc
+            .perform(get("/api/UCSBDiningCommonsMenuItem").param("id", "7"))
+            .andExpect(status().isNotFound())
+            .andReturn();
+
+    // assert
+
+    verify(ucsbDiningCommonsMenuItemRepository, times(1)).findById(eq(7L));
+    Map<String, Object> json = responseToJson(response);
+    assertEquals("id 7 not found", json.get("message"));
+  }
+
+  // Tests for POST /api/UCSBDiningCommonsMenuItem/post
 
   @Test
   public void logged_out_users_cannot_post() throws Exception {
     mockMvc
         .perform(
-            post("/api/ucsb-dining-commons-menu-items/post")
+            post("/api/UCSBDiningCommonsMenuItem/post")
                 .param("name", "Baked Pesto Pasta with Chicken")
                 .param("diningCommonsCode", "ortega")
                 .param("station", "Entree Specials")
@@ -106,7 +169,7 @@ public class UCSBDiningCommonsMenuItemControllerTests extends ControllerTestCase
   public void logged_in_regular_users_cannot_post() throws Exception {
     mockMvc
         .perform(
-            post("/api/ucsb-dining-commons-menu-items/post")
+            post("/api/UCSBDiningCommonsMenuItem/post")
                 .param("name", "Baked Pesto Pasta with Chicken")
                 .param("diningCommonsCode", "ortega")
                 .param("station", "Entree Specials")
@@ -133,7 +196,7 @@ public class UCSBDiningCommonsMenuItemControllerTests extends ControllerTestCase
     MvcResult response =
         mockMvc
             .perform(
-                post("/api/ucsb-dining-commons-menu-items/post")
+                post("/api/UCSBDiningCommonsMenuItem/post")
                     .param("name", "Baked Pesto Pasta with Chicken")
                     .param("diningCommonsCode", "ortega")
                     .param("station", "Entree Specials")

@@ -20,11 +20,6 @@ public class UCSBOrganizationController extends ApiController {
 
   @Autowired UCSBOrganizationRepository ucsbOrganizationRepository;
 
-  /**
-   * Returns all UCSB organizations.
-   *
-   * @return all organizations
-   */
   @Operation(summary = "List all UCSB organizations")
   @PreAuthorize("hasRole('ROLE_USER')")
   @GetMapping("/all")
@@ -32,12 +27,6 @@ public class UCSBOrganizationController extends ApiController {
     return ucsbOrganizationRepository.findAll();
   }
 
-  /**
-   * Returns a single UCSB organization.
-   *
-   * @param orgCode organization code
-   * @return matching organization
-   */
   @Operation(summary = "Get a single UCSB organization")
   @PreAuthorize("hasRole('ROLE_USER')")
   @GetMapping("")
@@ -48,11 +37,6 @@ public class UCSBOrganizationController extends ApiController {
         .orElseThrow(() -> new EntityNotFoundException(UCSBOrganization.class, orgCode));
   }
 
-  /**
-   * Creates a new UCSB organization.
-   *
-   * @return newly created organization
-   */
   @Operation(summary = "Create a new UCSB organization")
   @PreAuthorize("hasRole('ROLE_ADMIN')")
   @PostMapping("/post")
@@ -72,12 +56,6 @@ public class UCSBOrganizationController extends ApiController {
     return ucsbOrganizationRepository.save(organization);
   }
 
-  /**
-   * Deletes an existing UCSB organization.
-   *
-   * @param orgCode organization code
-   * @return deleted organization
-   */
   @Operation(summary = "Delete a UCSB organization")
   @PreAuthorize("hasRole('ROLE_ADMIN')")
   @DeleteMapping("")
@@ -94,13 +72,6 @@ public class UCSBOrganizationController extends ApiController {
     return organization;
   }
 
-  /**
-   * Updates an existing UCSB organization.
-   *
-   * @param orgCode organization code
-   * @param incoming updated organization
-   * @return updated organization
-   */
   @Operation(summary = "Update a UCSB organization")
   @PreAuthorize("hasRole('ROLE_ADMIN')")
   @PutMapping("")

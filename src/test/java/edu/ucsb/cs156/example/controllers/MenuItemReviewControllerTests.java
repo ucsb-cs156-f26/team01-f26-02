@@ -1,6 +1,7 @@
 package edu.ucsb.cs156.example.controllers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -97,7 +98,7 @@ public class MenuItemReviewControllerTests extends ControllerTestCase {
             .reviewerEmail("user@ucsb.edu")
             .stars(5)
             .dateReviewed(ldt)
-            .comments("I agree!")
+            .comments("Tastes great!")
             .build();
 
     when(menuItemReviewRepository.findById(eq(7L))).thenReturn(Optional.of(menuItemReview));
@@ -153,7 +154,7 @@ public class MenuItemReviewControllerTests extends ControllerTestCase {
             .reviewerEmail("user@ucsb.edu")
             .stars(5)
             .dateReviewed(ldt1)
-            .comments("I agree!")
+            .comments("Tastes great!")
             .build();
 
     LocalDateTime ldt2 = LocalDateTime.parse("2022-03-11T00:00:00");
@@ -164,7 +165,7 @@ public class MenuItemReviewControllerTests extends ControllerTestCase {
             .reviewerEmail("user@ucsb.edu")
             .stars(5)
             .dateReviewed(ldt2)
-            .comments("I agree!")
+            .comments("Tastes great!")
             .build();
 
     ArrayList<MenuItemReview> expectedReviews = new ArrayList<>();
@@ -197,7 +198,7 @@ public class MenuItemReviewControllerTests extends ControllerTestCase {
             .reviewerEmail("user@ucsb.edu")
             .stars(5)
             .dateReviewed(ldt1)
-            .comments("I agree!")
+            .comments("Tastes great!")
             .build();
 
     LocalDateTime ldt2 = LocalDateTime.parse("2022-03-11T00:00:00");
@@ -208,7 +209,7 @@ public class MenuItemReviewControllerTests extends ControllerTestCase {
             .reviewerEmail("user2@ucsb.edu")
             .stars(3)
             .dateReviewed(ldt2)
-            .comments("I disagree!")
+            .comments("Tastes okay.")
             .build();
 
     ArrayList<MenuItemReview> expectedReviews = new ArrayList<>();
@@ -241,7 +242,7 @@ public class MenuItemReviewControllerTests extends ControllerTestCase {
             .reviewerEmail("user@ucsb.edu")
             .stars(5)
             .dateReviewed(ldt1)
-            .comments("I agree!")
+            .comments("Tastes great!")
             .build();
 
     when(menuItemReviewRepository.save(eq(menuItemReview1))).thenReturn(menuItemReview1);
@@ -255,7 +256,7 @@ public class MenuItemReviewControllerTests extends ControllerTestCase {
                     .param("reviewerEmail", "user@ucsb.edu")
                     .param("stars", "5")
                     .param("dateReviewed", "2022-01-03T00:00:00")
-                    .param("comments", "I agree!")
+                    .param("comments", "Tastes great!")
                     .with(csrf()))
             .andExpect(status().isOk())
             .andReturn();
@@ -265,6 +266,60 @@ public class MenuItemReviewControllerTests extends ControllerTestCase {
     String expectedJson = mapper.writeValueAsString(menuItemReview1);
     String responseString = response.getResponse().getContentAsString();
     assertEquals(expectedJson, responseString);
+  }
+
+  @WithMockUser(roles = {"ADMIN", "USER"})
+  @Test
+  public void admin_can_delete_a_menuitemreview() throws Exception {
+    // arrange
+
+    LocalDateTime ldt1 = LocalDateTime.parse("2022-01-03T00:00:00");
+
+    MenuItemReview menuItemReview1 =
+        MenuItemReview.builder()
+            .itemId(1)
+            .reviewerEmail("user@ucsb.edu")
+            .stars(5)
+            .dateReviewed(ldt1)
+            .comments("Tastes great!")
+            .build();
+
+    when(menuItemReviewRepository.findById(eq(15L))).thenReturn(Optional.of(menuItemReview1));
+
+    // act
+    MvcResult response =
+        mockMvc
+            .perform(delete("/api/menuitemreview").param("id", "15").with(csrf()))
+            .andExpect(status().isOk())
+            .andReturn();
+
+    // assert
+    verify(menuItemReviewRepository, times(1)).findById(15L);
+    verify(menuItemReviewRepository, times(1)).delete(any());
+
+    Map<String, Object> json = responseToJson(response);
+    assertEquals("MenuItemReview with id 15 deleted", json.get("message"));
+  }
+
+  @WithMockUser(roles = {"ADMIN", "USER"})
+  @Test
+  public void admin_tries_to_delete_non_existant_menuitemreview_and_gets_right_error_message()
+      throws Exception {
+    // arrange
+
+    when(menuItemReviewRepository.findById(eq(15L))).thenReturn(Optional.empty());
+
+    // act
+    MvcResult response =
+        mockMvc
+            .perform(delete("/api/menuitemreview").param("id", "15").with(csrf()))
+            .andExpect(status().isNotFound())
+            .andReturn();
+
+    // assert
+    verify(menuItemReviewRepository, times(1)).findById(15L);
+    Map<String, Object> json = responseToJson(response);
+    assertEquals("MenuItemReview with id 15 not found", json.get("message"));
   }
 
   @WithMockUser(roles = {"ADMIN", "USER"})
@@ -281,7 +336,7 @@ public class MenuItemReviewControllerTests extends ControllerTestCase {
             .reviewerEmail("user@ucsb.edu")
             .stars(5)
             .dateReviewed(ldt1)
-            .comments("I agree!")
+            .comments("Tastes great!")
             .build();
 
     MenuItemReview menuItemReviewEdited =
@@ -290,7 +345,7 @@ public class MenuItemReviewControllerTests extends ControllerTestCase {
             .reviewerEmail("user2@ucsb.edu")
             .stars(3)
             .dateReviewed(ldt2)
-            .comments("I disagree!")
+            .comments("Tastes okay.")
             .build();
 
     String requestBody = mapper.writeValueAsString(menuItemReviewEdited);

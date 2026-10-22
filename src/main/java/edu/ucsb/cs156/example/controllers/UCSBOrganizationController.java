@@ -27,7 +27,10 @@ public class UCSBOrganizationController extends ApiController {
     return ucsbOrganizationRepository.findAll();
   }
 
-  @Operation(summary = "Get a single UCSB organization")
+  @Operation(
+      summary = "Get a single UCSB organization by orgCode",
+      description =
+          "Returns the organization matching the supplied orgCode. Returns 404 if no organization exists with that code.")
   @PreAuthorize("hasRole('ROLE_USER')")
   @GetMapping("")
   public UCSBOrganization getById(@Parameter(name = "orgCode") @RequestParam String orgCode) {

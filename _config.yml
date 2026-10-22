@@ -23,4 +23,4 @@ repo_name: "TBD"
 repo: ucsb-cs156-f26/team01-f26-02
 owner: ucsb-cs156-f26
 repo_name: team01-f26-02
-pull_requests: [{"author":{"id":"U_kgDOCe8YoQ","is_bot":false,"login":"Ooiuut","name":""},"headRefName":"Wayne-ReqRequestPut","number":65,"title":"Add RecommendationRequest PUT endpoint with tests","url":"https://github.com/ucsb-cs156-f26/team01-f26-02/pull/65"},{"author":{"id":"U_kgDOCe8YoQ","is_bot":false,"login":"Ooiuut","name":""},"headRefName":"Wayne-ReqRequestController","number":63,"title":"Add RecommendationRequest GET all and POST endpoints","url":"https://github.com/ucsb-cs156-f26/team01-f26-02/pull/63"}]
+pull_requests: []

@@ -2,6 +2,7 @@ package edu.ucsb.cs156.example.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.ucsb.cs156.example.entities.UCSBDiningCommonsMenuItem;
+import edu.ucsb.cs156.example.errors.EntityNotFoundException;
 import edu.ucsb.cs156.example.repositories.UCSBDiningCommonsMenuItemRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -73,7 +75,7 @@ public class UCSBDiningCommonsMenuItemController extends ApiController {
   @PreAuthorize("hasRole('ROLE_ADMIN')")
   @PostMapping("/post")
   public UCSBDiningCommonsMenuItem postUCSBDiningCommonsMenuItem(
-      @Parameter(name = "ortega") @RequestParam String diningCommonsCode,
+      @Parameter(name = "diningCommonsCode") @RequestParam String diningCommonsCode,
       @Parameter(name = "name") @RequestParam String name,
       @Parameter(name = "station") @RequestParam String station)
       throws JsonProcessingException {
@@ -87,5 +89,24 @@ public class UCSBDiningCommonsMenuItemController extends ApiController {
         ucsbDiningCommonsMenuItemRepository.save(ucsbDiningCommonsMenuItem);
 
     return savedUcsbDiningCommonsMenuItem;
+  }
+
+  /**
+   * Delete a UCSBDiningCommonsMenuItem
+   *
+   * @param id the id of the menu item to delete
+   * @return a message indicating the menu item was deleted
+   */
+  @Operation(summary = "Delete a UCSBDiningCommonsMenuItem")
+  @PreAuthorize("hasRole('ROLE_ADMIN')")
+  @DeleteMapping("")
+  public Object deleteUCSBDiningCommonsMenuItem(@Parameter(name = "id") @RequestParam Long id) {
+    UCSBDiningCommonsMenuItem ucsbDiningCommonsMenuItem =
+        ucsbDiningCommonsMenuItemRepository
+            .findById(id)
+            .orElseThrow(() -> new EntityNotFoundException(UCSBDiningCommonsMenuItem.class, id));
+
+    ucsbDiningCommonsMenuItemRepository.delete(ucsbDiningCommonsMenuItem);
+    return genericMessage("UCSBDiningCommonsMenuItem with id %s deleted".formatted(id));
   }
 }

@@ -140,6 +140,7 @@ public class UCSBOrganizationControllerTests extends ControllerTestCase {
   @Test
   public void admin_can_post_organization() throws Exception {
     UCSBOrganization org = sampleOrganization();
+    org.setInactive(true);
 
     when(ucsbOrganizationRepository.save(eq(org))).thenReturn(org);
 
@@ -150,7 +151,7 @@ public class UCSBOrganizationControllerTests extends ControllerTestCase {
                     .param("orgCode", "TEST")
                     .param("orgTranslationShort", "Test Org")
                     .param("orgTranslation", "Test Organization")
-                    .param("inactive", "false")
+                    .param("inactive", "true")
                     .with(csrf()))
             .andExpect(status().isOk())
             .andReturn();

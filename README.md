@@ -2,14 +2,11 @@
 
 Instructions: <https://ucsb-cs156.github.io/s26/lab/team01.html>
 
-TODO: change heading above to your repo name, e.g. `# team01-s26-17`
-
-TODO: Add a link to the deployed Dokku app for your team here, e.g.
 
 Deployments:
 
 * Prod: <https://team01.dokku-02.cs.ucsb.edu/>
-* QA: <https://team01-qa.dokku-17.cs.ucsb.edu>
+* QA: <https://team01-qa.dokku-02.cs.ucsb.edu>
 
 | Table                     | Name         | Github Id         |
 |---------------------------|--------------|-------------------|

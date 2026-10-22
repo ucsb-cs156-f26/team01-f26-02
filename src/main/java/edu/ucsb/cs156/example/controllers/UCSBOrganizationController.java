@@ -59,11 +59,13 @@ public class UCSBOrganizationController extends ApiController {
     return ucsbOrganizationRepository.save(organization);
   }
 
-  @Operation(summary = "Delete a UCSB organization")
+  @Operation(
+      summary = "Delete a UCSB organization by orgCode",
+      description =
+          "Deletes the organization matching the supplied orgCode. Returns 404 if no organization exists with that code.")
   @PreAuthorize("hasRole('ROLE_ADMIN')")
   @DeleteMapping("")
-  public UCSBOrganization deleteOrganization(
-      @Parameter(name = "orgCode") @RequestParam String orgCode) {
+  public String deleteOrganization(@Parameter(name = "orgCode") @RequestParam String orgCode) {
 
     UCSBOrganization organization =
         ucsbOrganizationRepository
@@ -72,7 +74,7 @@ public class UCSBOrganizationController extends ApiController {
 
     ucsbOrganizationRepository.delete(organization);
 
-    return organization;
+    return "record " + orgCode + " deleted";
   }
 
   @Operation(summary = "Update a UCSB organization")
